@@ -185,23 +185,43 @@ export default function Home() {
       <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Top Banner Navigation Bar */}
-      <header className="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-3 sm:px-6">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🚖</span>
-            <div>
-              <h1 className="font-extrabold text-sm sm:text-base tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
-                Cab Tracker
-              </h1>
-              <p className="text-[10px] text-slate-500 font-semibold leading-none mt-0.5">Expense & Earnings Log</p>
+      <header className="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-2.5 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col gap-2.5 sm:flex-row sm:justify-between sm:items-center">
+          {/* Row 1 (on mobile): Logo & Info, theme and DB connection badges */}
+          <div className="flex justify-between items-center w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🚖</span>
+              <div>
+                <h1 className="font-extrabold text-sm sm:text-base tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                  Cab Tracker
+                </h1>
+                <p className="text-[10px] text-slate-500 font-semibold leading-none mt-0.5">Expense & Earnings Log</p>
+              </div>
+            </div>
+
+            {/* Badges on mobile right, desktop hidden */}
+            <div className="flex items-center gap-2 sm:hidden">
+              {/* Theme switch */}
+              <button
+                onClick={toggleTheme}
+                className="cursor-pointer text-slate-400 hover:text-slate-205 p-1 rounded-lg border border-slate-800 hover:bg-slate-900 transition text-xs shadow h-7 w-7 flex items-center justify-center"
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
+
+              {/* DB Indicator */}
+              <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-900 border border-slate-850 text-slate-405 flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${isDbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                {isDbConnected ? 'Live' : 'Local'}
+              </span>
             </div>
           </div>
 
-          {/* Nav Links */}
-          <nav className="hidden md:flex bg-slate-900 border border-slate-800/80 p-0.5 rounded-xl text-xs font-semibold">
+          {/* Navigation Pills (Visible on both mobile and desktop) */}
+          <nav className="bg-slate-900 border border-slate-800/80 p-0.5 rounded-xl text-xs font-semibold flex justify-center w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('logs')}
-              className={`px-4 py-1.5 rounded-lg transition ${
+              className={`flex-1 sm:flex-initial text-center px-4 py-1.5 rounded-lg transition ${
                 activeTab === 'logs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -209,7 +229,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab('reports')}
-              className={`px-4 py-1.5 rounded-lg transition ${
+              className={`flex-1 sm:flex-initial text-center px-4 py-1.5 rounded-lg transition ${
                 activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -217,24 +237,19 @@ export default function Home() {
             </button>
           </nav>
 
-          {/* Header Action Controls */}
-          <div className="flex items-center gap-2.5">
-            {/* Theme Toggle Button */}
+          {/* Desktop Only Badges (hidden on mobile) */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* Theme switch */}
             <button
               onClick={toggleTheme}
-              className="cursor-pointer p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs shadow flex items-center justify-center h-7 w-7"
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              className="cursor-pointer text-slate-400 hover:text-slate-205 p-1.5 rounded-lg border border-slate-800/80 hover:bg-slate-900 transition text-xs shadow h-7 w-7 flex items-center justify-center"
             >
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
 
-            {/* Database Connectivity Status Widget */}
+            {/* DB Indicator */}
             <span
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
-                isDbConnected
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-              }`}
+              className="text-[10px] font-bold px-2.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1.5"
               title={
                 isDbConnected
                   ? 'Connected to your MongoDB Instance'
@@ -249,7 +264,7 @@ export default function Home() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6 pb-24 md:pb-6">
+      <main className="max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6 pb-6">
         {/* Connection Setup Assistant Notice */}
         {!isDbConnected && (
           <div className="bg-slate-900/60 backdrop-blur-sm border border-amber-500/10 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -275,21 +290,31 @@ export default function Home() {
           <div className="space-y-6">
             {/* 2. Page Content Routing */}
             {activeTab === 'logs' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start animate-fadeIn">
-                {/* Form column (always displayed inline on Track/Logs page) */}
-                <div className="lg:col-span-1">
-                  <LogForm
-                    onSubmit={handleSave}
-                    editingLog={editingLog}
-                    onCancelEdit={() => setEditingLog(null)}
-                  />
-                </div>
-                {/* Table list column */}
-                <div className="lg:col-span-2 space-y-4">
-                  {/* Search header card */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 backdrop-blur-md">
-                    <h3 className="text-base font-bold text-slate-100 tracking-tight">🚖 Cab Logs & Tracking</h3>
-                    <div className="w-full sm:w-64">
+              <div className="space-y-4 w-full animate-fadeIn">
+                {/* Unified Action Row Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md">
+                  {/* Left side: Title and Mobile Add Log button */}
+                  <div className="flex justify-between items-center w-full md:w-auto">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🚖</span>
+                      <h3 className="text-base font-bold text-slate-100 tracking-tight">Cab Logs & Tracking</h3>
+                    </div>
+                    {/* Add Log Button (visible on mobile only) */}
+                    <button
+                      onClick={() => {
+                        setEditingLog(null);
+                        setIsFormOpen(!isFormOpen);
+                      }}
+                      className="cursor-pointer md:hidden bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center justify-center gap-1 transition shadow-lg shrink-0"
+                    >
+                      <span>➕</span> Add Log
+                    </button>
+                  </div>
+
+                  {/* Right side: Search field and Desktop Add Log button */}
+                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    {/* Search Field */}
+                    <div className="w-full md:w-64">
                       <input
                         type="text"
                         placeholder="Search date or notes..."
@@ -301,21 +326,49 @@ export default function Home() {
                         className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs"
                       />
                     </div>
+                    {/* Add Log Button (hidden on mobile, visible on desktop) */}
+                    <button
+                      onClick={() => {
+                        setEditingLog(null);
+                        setIsFormOpen(!isFormOpen);
+                      }}
+                      className="cursor-pointer hidden md:flex bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold px-4 py-2 rounded-xl text-xs items-center justify-center gap-1.5 transition shadow-lg w-full sm:w-auto"
+                    >
+                      <span>➕</span> Add Log
+                    </button>
                   </div>
-
-                  <LogsTable
-                    logs={logs}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                    onEdit={(log) => {
-                      setEditingLog(log);
-                      // Smooth scroll to top form on mobile devices
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    onDelete={handleDelete}
-                  />
                 </div>
+
+                {/* Inline Log Form (Shown dynamically in the page flow when toggled) */}
+                {isFormOpen && (
+                  <div className="animate-fadeIn w-full">
+                    <LogForm
+                      onSubmit={async (logData) => {
+                        await handleSave(logData);
+                        setIsFormOpen(false);
+                      }}
+                      editingLog={editingLog}
+                      onCancelEdit={() => {
+                        setEditingLog(null);
+                        setIsFormOpen(false);
+                      }}
+                    />
+                  </div>
+                )}
+
+                <LogsTable
+                  logs={logs}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => setCurrentPage(page)}
+                  onEdit={(log) => {
+                    setEditingLog(log);
+                    setIsFormOpen(true);
+                    // Smooth scroll to top form on mobile devices
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  onDelete={handleDelete}
+                />
               </div>
             )}
 
@@ -324,30 +377,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Floating Bottom Nav (Mobile/Tablet Only) */}
-      <footer className="md:hidden fixed bottom-0 left-0 right-0 border-t border-slate-800 bg-slate-950/95 backdrop-blur-lg px-6 py-2.5 z-40 flex justify-between items-center">
-        <button
-          onClick={() => {
-            setActiveTab('logs');
-            setEditingLog(null);
-          }}
-          className={`flex flex-col items-center gap-1 flex-1 transition ${
-            activeTab === 'logs' ? 'text-indigo-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <span className="text-base">🚖</span>
-          <span className="text-[10px] font-semibold">Track & Logs</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('reports')}
-          className={`flex flex-col items-center gap-1 flex-1 transition ${
-            activeTab === 'reports' ? 'text-indigo-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <span className="text-base">📊</span>
-          <span className="text-[10px] font-semibold">Reports</span>
-        </button>
-      </footer>
     </div>
   );
 }

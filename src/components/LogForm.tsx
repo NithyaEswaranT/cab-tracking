@@ -119,13 +119,13 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
         <h3 className="text-lg font-bold text-slate-100 tracking-tight">
           {editingLog ? '✏️ Edit Cab Log' : '🚖 Log Daily Activity'}
         </h3>
-        {editingLog && onCancelEdit && (
+        {onCancelEdit && (
           <button
             type="button"
             onClick={onCancelEdit}
-            className="cursor-pointer text-xs text-rose-400 hover:text-rose-300 font-semibold px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 transition"
+            className="cursor-pointer text-xs text-slate-400 hover:text-slate-250 font-semibold px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-850 transition"
           >
-            Cancel Edit
+            {editingLog ? 'Cancel Edit' : 'Close Form ✕'}
           </button>
         )}
       </div>
@@ -169,7 +169,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
         </div>
 
         {/* Trips Count & Gas Filled */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
               No. of Trips
@@ -202,7 +202,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
         </div>
 
         {/* Monetary Fields */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
               Gas Cost ($)
