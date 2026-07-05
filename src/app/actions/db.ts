@@ -32,7 +32,7 @@ export async function getLogs(): Promise<CabLog[]> {
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('cab_expense');
     const collection = db.collection('cab_logs');
 
     const logs = await collection.find({}).sort({ date: -1 }).toArray();
@@ -80,7 +80,7 @@ export async function saveLog(log: Omit<CabLog, 'balance' | 'id'> & { id?: strin
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('cab_expense');
     const collection = db.collection('cab_logs');
 
     await collection.updateOne(
@@ -106,7 +106,7 @@ export async function deleteLog(id: string): Promise<{ success: boolean; error?:
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('cab_expense');
     const collection = db.collection('cab_logs');
 
     const result = await collection.deleteOne({ id });
@@ -131,7 +131,7 @@ export async function getLogsPaginated(
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('cab_expense');
     const collection = db.collection('cab_logs');
 
     const filter: any = {};
