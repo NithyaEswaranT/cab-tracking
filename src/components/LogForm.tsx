@@ -119,7 +119,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
         <h3 className="text-lg font-bold text-slate-100 tracking-tight">
           {editingLog ? '✏️ Edit Cab Log' : '🚖 Log Daily Activity'}
         </h3>
-        {editingLog && (
+        {editingLog && onCancelEdit && (
           <button
             type="button"
             onClick={onCancelEdit}
