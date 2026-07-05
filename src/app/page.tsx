@@ -179,7 +179,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 transition-colors duration-300">
+    <div className="flex-1 overflow-hidden bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 transition-colors duration-300">
       {/* Glow Background Elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
@@ -249,7 +249,7 @@ export default function Home() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6 pb-24 md:pb-6">
+      <main className="flex-1 overflow-y-auto max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6 pb-6 md:pb-6">
         {/* Connection Setup Assistant Notice */}
         {!isDbConnected && (
           <div className="bg-slate-900/60 backdrop-blur-sm border border-amber-500/10 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -277,14 +277,29 @@ export default function Home() {
             {activeTab === 'logs' && (
               <div className="space-y-4 w-full">
                 {/* Unified Modern Action Row Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md animate-fadeIn">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🚖</span>
-                    <h3 className="text-base font-bold text-slate-100 tracking-tight">Cab Logs & Tracking</h3>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md animate-fadeIn">
+                  {/* Left side: Title and Mobile Add Log button */}
+                  <div className="flex justify-between items-center w-full md:w-auto">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🚖</span>
+                      <h3 className="text-base font-bold text-slate-100 tracking-tight">Cab Logs & Tracking</h3>
+                    </div>
+                    {/* Add Log Button (visible on mobile only) */}
+                    <button
+                      onClick={() => {
+                        setEditingLog(null);
+                        setIsFormOpen(true);
+                      }}
+                      className="cursor-pointer md:hidden bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center justify-center gap-1 transition shadow-lg shrink-0"
+                    >
+                      <span>➕</span> Add Log
+                    </button>
                   </div>
+
+                  {/* Right side: Search field and Desktop Add Log button */}
                   <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                    {/* Search Field directly in the header */}
-                    <div className="w-full sm:w-64">
+                    {/* Search Field */}
+                    <div className="w-full md:w-64">
                       <input
                         type="text"
                         placeholder="Search date or notes..."
@@ -296,13 +311,13 @@ export default function Home() {
                         className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs"
                       />
                     </div>
-                    {/* Add Log Button */}
+                    {/* Add Log Button (hidden on mobile, visible on desktop) */}
                     <button
                       onClick={() => {
                         setEditingLog(null);
                         setIsFormOpen(true);
                       }}
-                      className="cursor-pointer bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-lg w-full sm:w-auto"
+                      className="cursor-pointer hidden md:flex bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold px-4 py-2 rounded-xl text-xs items-center justify-center gap-1.5 transition shadow-lg w-full sm:w-auto"
                     >
                       <span>➕</span> Add Log
                     </button>
@@ -325,30 +340,12 @@ export default function Home() {
 
             {activeTab === 'reports' && <Reports logs={allLogsForReports} />}
 
-            {/* Form Overlay Modal */}
-            {isFormOpen && (
-              <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-                <div className="w-full max-w-lg relative animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-                  <LogForm
-                    onSubmit={async (logData) => {
-                      await handleSave(logData);
-                      setIsFormOpen(false);
-                    }}
-                    editingLog={editingLog}
-                    onCancelEdit={() => {
-                      setEditingLog(null);
-                      setIsFormOpen(false);
-                    }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         )}
       </main>
 
-      {/* Floating Bottom Nav (Mobile/Tablet Only) */}
-      <footer className="md:hidden fixed bottom-0 left-0 right-0 border-t border-slate-800 bg-slate-950/95 backdrop-blur-lg px-6 py-2.5 z-40 flex justify-between items-center">
+      {/* Static Bottom Nav (Mobile/Tablet Only, locked to bottom) */}
+      <footer className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-lg px-6 py-2.5 z-40 flex justify-between items-center w-full shrink-0">
         <button
           onClick={() => {
             setActiveTab('logs');
@@ -371,6 +368,25 @@ export default function Home() {
           <span className="text-[10px] font-semibold">Reports</span>
         </button>
       </footer>
+
+      {/* Form Overlay Modal - RENDERED OUTSIDE SCROLLABLE CONTAINER */}
+      {isFormOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-[92%] max-w-md relative animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+            <LogForm
+              onSubmit={async (logData) => {
+                await handleSave(logData);
+                setIsFormOpen(false);
+              }}
+              editingLog={editingLog}
+              onCancelEdit={() => {
+                setEditingLog(null);
+                setIsFormOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
