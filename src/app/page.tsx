@@ -19,8 +19,32 @@ export default function Home() {
   const [editingLog, setEditingLog] = useState<CabLog | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const itemsPerPage = 8;
+
+  // Load theme config on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('cab_tracker_theme') as 'dark' | 'light';
+    const active = savedTheme || 'dark';
+    setTheme(active);
+    if (active === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('cab_tracker_theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
 
   // Initialize DB Connection config check on mount
   useEffect(() => {
@@ -155,7 +179,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex-1 bg-[#0b0f19] text-white flex flex-col font-sans selection:bg-indigo-500/30">
+    <div className="flex-1 bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 transition-colors duration-300">
       {/* Glow Background Elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
@@ -193,8 +217,18 @@ export default function Home() {
             </button>
           </nav>
 
-          {/* Database Connectivity Status Widget */}
+          {/* Header Action Controls */}
           <div className="flex items-center gap-2.5">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="cursor-pointer p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs shadow flex items-center justify-center h-7 w-7"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+
+            {/* Database Connectivity Status Widget */}
             <span
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
                 isDbConnected
@@ -246,7 +280,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md animate-fadeIn">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🚖</span>
-                    <h3 className="text-base font-bold text-white tracking-tight">Cab Logs & Tracking</h3>
+                    <h3 className="text-base font-bold text-slate-100 tracking-tight">Cab Logs & Tracking</h3>
                   </div>
                   <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                     {/* Search Field directly in the header */}
@@ -259,7 +293,7 @@ export default function Home() {
                           setSearchQuery(e.target.value);
                           setCurrentPage(1);
                         }}
-                        className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500 transition text-xs"
+                        className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs"
                       />
                     </div>
                     {/* Add Log Button */}

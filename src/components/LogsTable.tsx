@@ -181,14 +181,14 @@ export default function LogsTable({
                 <button
                   onClick={() => onPageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="cursor-pointer px-3 py-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 text-white rounded-lg disabled:opacity-40 transition font-bold"
+                  className="cursor-pointer px-3 py-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 text-slate-100 rounded-lg disabled:opacity-40 transition font-bold"
                 >
                   ◀ Prev
                 </button>
                 <button
                   onClick={() => onPageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="cursor-pointer px-3 py-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 text-white rounded-lg disabled:opacity-40 transition font-bold"
+                  className="cursor-pointer px-3 py-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 text-slate-100 rounded-lg disabled:opacity-40 transition font-bold"
                 >
                   Next ▶
                 </button>

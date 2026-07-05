@@ -210,7 +210,7 @@ export default function Reports({ logs }: ReportsProps) {
 
       {/* Toggle Tab & Excel Export Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 backdrop-blur-md">
-        <h4 className="text-base font-bold text-white tracking-tight">
+        <h4 className="text-base font-bold text-slate-100 tracking-tight">
           📊 Cab Performance Reports
         </h4>
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -279,7 +279,7 @@ export default function Reports({ logs }: ReportsProps) {
 
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative">
-                      <div className="absolute bottom-full mb-2 bg-slate-950 border border-slate-800 text-white text-[10px] p-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150 z-10 shadow-xl whitespace-nowrap">
+                      <div className="absolute bottom-full mb-2 bg-slate-950 border border-slate-800 text-slate-100 text-[10px] p-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150 z-10 shadow-xl whitespace-nowrap">
                         <p className="font-bold text-slate-400">{item.key}</p>
                         <p className="text-emerald-400">Revenue: {formatCurrency(item.amountReceived)}</p>
                         <p className="text-rose-400">Expenses: {formatCurrency(expenses)}</p>
@@ -370,7 +370,7 @@ export default function Reports({ logs }: ReportsProps) {
                   <div className="grid grid-cols-3 gap-2 text-center py-1 bg-slate-950/40 rounded-xl border border-slate-800/40">
                     <div className="p-2 border-r border-slate-800/40">
                       <span className="block text-[9px] text-slate-500 uppercase font-bold">Revenue</span>
-                      <span className="text-xs font-bold text-white block mt-0.5">{formatCurrency(group.amountReceived)}</span>
+                      <span className="text-xs font-bold text-slate-100 block mt-0.5">{formatCurrency(group.amountReceived)}</span>
                     </div>
                     <div className="p-2 border-r border-slate-800/40">
                       <span className="block text-[9px] text-slate-500 uppercase font-bold">Gas Cost</span>

@@ -1,63 +1,69 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import { CabLog } from '@/app/actions/db';
 
 interface LogFormProps {
   onSubmit: (log: Omit<CabLog, 'balance' | 'id'> & { id?: string }) => Promise<void>;
-  editingLog: CabLog | null;
-  onCancelEdit: () => void;
+  editingLog?: CabLog | null;
+  onCancelEdit?: () => void;
 }
 
-const initialFormState = {
-  date: new Date().toISOString().split('T')[0],
-  gasVolume: '',
-  gasCost: '',
-  tripsCount: '',
-  amountReceived: '',
-  driverPay: '',
-  notes: '',
-};
-
 export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormProps) {
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    gasVolume: '',
+    gasCost: '',
+    tripsCount: '',
+    amountReceived: '',
+    driverPay: '',
+    notes: '',
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [prevEditingLog, setPrevEditingLog] = useState<CabLog | null>(null);
-
-  // Sync with editing log
+  // Sync edit mode fields
   useEffect(() => {
-    if (editingLog !== prevEditingLog) {
-      setPrevEditingLog(editingLog);
-      if (editingLog) {
-        setFormData({
-          date: editingLog.date,
-          gasVolume: editingLog.gasVolume.toString(),
-          gasCost: editingLog.gasCost.toString(),
-          tripsCount: editingLog.tripsCount.toString(),
-          amountReceived: editingLog.amountReceived.toString(),
-          driverPay: editingLog.driverPay.toString(),
-          notes: editingLog.notes || '',
-        });
-      } else if (prevEditingLog) {
-        // Only reset if transitioning from edit mode to add mode
-        setFormData({
-          ...initialFormState,
-          date: new Date().toISOString().split('T')[0],
-        });
-      }
+    if (editingLog) {
+      setFormData({
+        date: editingLog.date,
+        gasVolume: editingLog.gasVolume ? editingLog.gasVolume.toString() : '',
+        gasCost: editingLog.gasCost ? editingLog.gasCost.toString() : '',
+        tripsCount: editingLog.tripsCount ? editingLog.tripsCount.toString() : '',
+        amountReceived: editingLog.amountReceived ? editingLog.amountReceived.toString() : '',
+        driverPay: editingLog.driverPay ? editingLog.driverPay.toString() : '',
+        notes: editingLog.notes || '',
+      });
+    } else {
+      // Clear form except date (as requested to keep date locked on submit)
+      setFormData((prev) => ({
+        ...prev,
+        gasVolume: '',
+        gasCost: '',
+        tripsCount: '',
+        amountReceived: '',
+        driverPay: '',
+        notes: '',
+      }));
     }
-  }, [editingLog, prevEditingLog]);
+  }, [editingLog]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleQuickDate = (daysAgo: number) => {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
-    setFormData((prev) => ({ ...prev, date: d.toISOString().split('T')[0] }));
+    setFormData((prev) => ({
+      ...prev,
+      date: d.toISOString().split('T')[0],
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,19 +71,9 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
     setIsSubmitting(true);
     setError(null);
 
-    // Validate
-    if (!formData.date) {
-      setError('Date is required');
-      setIsSubmitting(false);
-      return;
-    }
-    if (formData.amountReceived.trim() === '') {
-      setError('Amount Received is mandatory');
-      setIsSubmitting(false);
-      return;
-    }
-    if (formData.driverPay.trim() === '') {
-      setError('Driver Pay is mandatory');
+    // Mandatories check
+    if (!formData.amountReceived || !formData.driverPay) {
+      setError("Amount Received and Driver Pay are mandatory fields.");
       setIsSubmitting(false);
       return;
     }
@@ -86,23 +82,26 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
       await onSubmit({
         id: editingLog?.id,
         date: formData.date,
-        gasVolume: Number(formData.gasVolume || 0),
-        gasCost: Number(formData.gasCost || 0),
-        tripsCount: Number(formData.tripsCount || 0),
-        amountReceived: Number(formData.amountReceived || 0),
-        driverPay: Number(formData.driverPay || 0),
+        gasVolume: formData.gasVolume ? Number(formData.gasVolume) : 0,
+        gasCost: formData.gasCost ? Number(formData.gasCost) : 0,
+        tripsCount: formData.tripsCount ? Number(formData.tripsCount) : 0,
+        amountReceived: Number(formData.amountReceived),
+        driverPay: Number(formData.driverPay),
         notes: formData.notes,
       });
 
-      if (!editingLog) {
-        // Reset form except date (handy for sequential entries)
-        setFormData((prev) => ({
-          ...initialFormState,
-          date: prev.date,
-        }));
-      }
+      // Clear all fields EXCEPT the date (requested behavior: "once log added date not cleared")
+      setFormData((prev) => ({
+        date: prev.date,
+        gasVolume: '',
+        gasCost: '',
+        tripsCount: '',
+        amountReceived: '',
+        driverPay: '',
+        notes: '',
+      }));
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err?.message || 'Something went wrong while saving details.');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,14 +116,14 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
   return (
     <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-xl">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-white tracking-tight">
+        <h3 className="text-lg font-bold text-slate-100 tracking-tight">
           {editingLog ? '✏️ Edit Cab Log' : '🚖 Log Daily Activity'}
         </h3>
         {editingLog && (
           <button
             type="button"
             onClick={onCancelEdit}
-            className="text-xs text-rose-400 hover:text-rose-300 font-semibold px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 transition"
+            className="cursor-pointer text-xs text-rose-400 hover:text-rose-300 font-semibold px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 transition"
           >
             Cancel Edit
           </button>
@@ -149,20 +148,20 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
             required
             value={formData.date}
             onChange={handleChange}
-            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-sm"
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
           />
           <div className="flex gap-2 mt-1.5">
             <button
               type="button"
               onClick={() => handleQuickDate(0)}
-              className="text-2xs bg-slate-800/60 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded transition text-[11px]"
+              className="cursor-pointer text-2xs bg-slate-800/60 hover:bg-slate-850 text-slate-400 px-2 py-1 rounded transition text-[11px]"
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => handleQuickDate(1)}
-              className="text-2xs bg-slate-800/60 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded transition text-[11px]"
+              className="cursor-pointer text-2xs bg-slate-800/60 hover:bg-slate-850 text-slate-400 px-2 py-1 rounded transition text-[11px]"
             >
               Yesterday
             </button>
@@ -182,7 +181,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
               min="0"
               value={formData.tripsCount}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-sm"
+              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
             />
           </div>
           <div>
@@ -197,7 +196,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
               step="any"
               value={formData.gasVolume}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-sm"
+              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
             />
           </div>
         </div>
@@ -216,7 +215,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
               step="any"
               value={formData.gasCost}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition text-sm"
+              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-cyan-500 transition text-sm"
             />
           </div>
           <div>
@@ -232,7 +231,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
               required
               value={formData.amountReceived}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition text-sm"
+              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500 transition text-sm"
             />
           </div>
           <div>
@@ -248,7 +247,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
               required
               value={formData.driverPay}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-violet-500 transition text-sm"
+              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-violet-500 transition text-sm"
             />
           </div>
         </div>
@@ -264,7 +263,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
             rows={2}
             value={formData.notes}
             onChange={handleChange}
-            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-sm resize-none"
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm resize-none"
           />
         </div>
 

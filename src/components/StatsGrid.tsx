@@ -56,7 +56,7 @@ export default function StatsGrid({ logs }: StatsGridProps) {
             Earnings
           </span>
         </div>
-        <p className="text-2xl md:text-3xl font-bold mt-3 tracking-tight text-white">
+        <p className="text-2xl md:text-3xl font-bold mt-3 tracking-tight text-slate-100">
           {formatCurrency(totalRevenue)}
         </p>
         <p className="text-xs text-slate-500 mt-2">
