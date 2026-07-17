@@ -24,9 +24,9 @@ export default function Reports({ logs }: ReportsProps) {
   const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null);
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0
     }).format(val);
   };
@@ -160,12 +160,11 @@ export default function Reports({ logs }: ReportsProps) {
     const headers = [
       "Date",
       "Trips Count",
-      "Gas Filled (L/g)",
-      "Gas Cost ($)",
-      "Amount Received ($)",
-      "Driver Pay ($)",
-      "Total Deductions ($)",
-      "Balance Amount ($)",
+      "Gas Cost (₹)",
+      "Amount Received (₹)",
+      "Driver Pay (₹)",
+      "Total Deductions (₹)",
+      "Balance Amount (₹)",
       "Notes"
     ];
 
@@ -174,7 +173,6 @@ export default function Reports({ logs }: ReportsProps) {
       return [
         log.date,
         log.tripsCount,
-        log.gasVolume,
         log.gasCost.toFixed(2),
         log.amountReceived.toFixed(2),
         log.driverPay.toFixed(2),
@@ -387,7 +385,7 @@ export default function Reports({ logs }: ReportsProps) {
                     <div className="flex justify-between items-center">
                       <span>Average Earnings / Trip:</span>
                       <span className="text-slate-200">
-                        {group.tripsCount ? formatCurrency(group.amountReceived / group.tripsCount) : '$0'}
+                        {group.tripsCount ? formatCurrency(group.amountReceived / group.tripsCount) : '₹0'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -440,7 +438,7 @@ export default function Reports({ logs }: ReportsProps) {
                           <div className="space-y-0.5">
                             <p className="font-bold text-slate-200">{log.date}</p>
                             <p className="text-slate-500 font-semibold">
-                              {log.tripsCount} trips {log.gasVolume ? `• ${log.gasVolume}L gas` : ''}
+                              {log.tripsCount} trips
                             </p>
                             {log.notes && (
                               <p className="text-slate-400 italic text-[10px] max-w-44 truncate" title={log.notes}>

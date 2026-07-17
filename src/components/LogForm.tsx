@@ -7,12 +7,12 @@ interface LogFormProps {
   onSubmit: (log: Omit<CabLog, 'balance' | 'id'> & { id?: string }) => Promise<void>;
   editingLog?: CabLog | null;
   onCancelEdit?: () => void;
+  defaultDriverPay?: string;
 }
 
-export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormProps) {
+export default function LogForm({ onSubmit, editingLog, onCancelEdit, defaultDriverPay }: LogFormProps) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    gasVolume: '',
     gasCost: '',
     tripsCount: '',
     amountReceived: '',
@@ -23,12 +23,11 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Sync edit mode fields
+  // Sync edit mode fields and default values
   useEffect(() => {
     if (editingLog) {
       setFormData({
         date: editingLog.date,
-        gasVolume: editingLog.gasVolume ? editingLog.gasVolume.toString() : '',
         gasCost: editingLog.gasCost ? editingLog.gasCost.toString() : '',
         tripsCount: editingLog.tripsCount ? editingLog.tripsCount.toString() : '',
         amountReceived: editingLog.amountReceived ? editingLog.amountReceived.toString() : '',
@@ -39,15 +38,14 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
       // Clear form except date (as requested to keep date locked on submit)
       setFormData((prev) => ({
         ...prev,
-        gasVolume: '',
         gasCost: '',
         tripsCount: '',
         amountReceived: '',
-        driverPay: '',
+        driverPay: defaultDriverPay || '', // pre-fill with fixed salary setting
         notes: '',
       }));
     }
-  }, [editingLog]);
+  }, [editingLog, defaultDriverPay]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -82,7 +80,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
       await onSubmit({
         id: editingLog?.id,
         date: formData.date,
-        gasVolume: formData.gasVolume ? Number(formData.gasVolume) : 0,
+        gasVolume: 0,
         gasCost: formData.gasCost ? Number(formData.gasCost) : 0,
         tripsCount: formData.tripsCount ? Number(formData.tripsCount) : 0,
         amountReceived: Number(formData.amountReceived),
@@ -90,14 +88,13 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
         notes: formData.notes,
       });
 
-      // Clear all fields EXCEPT the date (requested behavior: "once log added date not cleared")
+      // Clear all fields EXCEPT the date
       setFormData((prev) => ({
         date: prev.date,
-        gasVolume: '',
         gasCost: '',
         tripsCount: '',
         amountReceived: '',
-        driverPay: '',
+        driverPay: defaultDriverPay || '', // reset to fixed driver salary
         notes: '',
       }));
     } catch (err: any) {
@@ -168,44 +165,27 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
           </div>
         </div>
 
-        {/* Trips Count & Gas Filled */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              No. of Trips
-            </label>
-            <input
-              type="number"
-              name="tripsCount"
-              placeholder="e.g. 15"
-              min="0"
-              value={formData.tripsCount}
-              onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Gas Filled (L/gal)
-            </label>
-            <input
-              type="number"
-              name="gasVolume"
-              placeholder="e.g. 12.5"
-              min="0"
-              step="any"
-              value={formData.gasVolume}
-              onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
-            />
-          </div>
+        {/* Trips Count */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            No. of Trips
+          </label>
+          <input
+            type="number"
+            name="tripsCount"
+            placeholder="e.g. 15"
+            min="0"
+            value={formData.tripsCount}
+            onChange={handleChange}
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm"
+          />
         </div>
 
         {/* Monetary Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Gas Cost ($)
+              Gas Cost (₹)
             </label>
             <input
               type="number"
@@ -220,7 +200,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Amount Rec ($) *
+              Amount Rec (₹) *
             </label>
             <input
               type="number"
@@ -236,7 +216,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Driver Pay ($) *
+              Driver Pay (₹) *
             </label>
             <input
               type="number"
@@ -275,8 +255,7 @@ export default function LogForm({ onSubmit, editingLog, onCancelEdit }: LogFormP
           </div>
           <div className="text-right">
             <span className={`text-lg font-bold ${liveTally >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {liveTally >= 0 ? '+' : ''}
-              {liveTally.toFixed(2)}
+              {liveTally >= 0 ? '+' : '-'}₹{Math.abs(liveTally).toFixed(2)}
             </span>
           </div>
         </div>

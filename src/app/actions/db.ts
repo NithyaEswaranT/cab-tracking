@@ -5,7 +5,7 @@ import clientPromise from '@/lib/mongodb';
 export interface CabLog {
   id: string;
   date: string;
-  gasVolume: number;
+  gasVolume?: number;
   gasCost: number;
   tripsCount: number;
   amountReceived: number;
@@ -69,7 +69,7 @@ export async function saveLog(log: Omit<CabLog, 'balance' | 'id'> & { id?: strin
   const newLog: CabLog = {
     id,
     date: log.date,
-    gasVolume: Number(log.gasVolume),
+    gasVolume: Number(log.gasVolume ?? 0),
     gasCost: Number(log.gasCost),
     tripsCount: Number(log.tripsCount),
     amountReceived: Number(log.amountReceived),

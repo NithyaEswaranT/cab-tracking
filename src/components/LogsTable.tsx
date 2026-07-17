@@ -20,9 +20,9 @@ export default function LogsTable({
   onDelete,
 }: LogsTableProps) {
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(val);
   };
 
@@ -47,7 +47,6 @@ export default function LogsTable({
                 <tr className="bg-slate-900/60 border-b border-slate-800/80 text-slate-400 font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Trips</th>
-                  <th className="py-3 px-4">Gas Filled</th>
                   <th className="py-3 px-4">Gas Cost</th>
                   <th className="py-3 px-4">Revenue</th>
                   <th className="py-3 px-4">Driver Pay</th>
@@ -61,7 +60,6 @@ export default function LogsTable({
                   <tr key={log.id} className="hover:bg-slate-800/20 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-slate-200">{log.date}</td>
                     <td className="py-3.5 px-4">{log.tripsCount}</td>
-                    <td className="py-3.5 px-4">{log.gasVolume ? `${log.gasVolume.toFixed(1)} L/g` : '-'}</td>
                     <td className="py-3.5 px-4 text-cyan-400">{log.gasCost ? formatCurrency(log.gasCost) : '-'}</td>
                     <td className="py-3.5 px-4 text-emerald-400 font-medium">{formatCurrency(log.amountReceived)}</td>
                     <td className="py-3.5 px-4 text-violet-400">{formatCurrency(log.driverPay)}</td>
@@ -111,7 +109,7 @@ export default function LogsTable({
                   <div className="flex flex-col">
                     <span className="font-bold text-slate-200 text-sm">{log.date}</span>
                     <span className="text-[10px] text-slate-500 font-semibold mt-0.5">
-                      {log.tripsCount} trips {log.gasVolume ? `• ${log.gasVolume.toFixed(1)}L gas` : ''}
+                      {log.tripsCount} trips
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -137,12 +135,8 @@ export default function LogsTable({
                     <p className="text-slate-200 font-semibold mt-0.5">{log.tripsCount} trips</p>
                   </div>
                   <div>
-                    <span className="block text-[9px] text-slate-500 uppercase font-bold">Gas Filled</span>
-                    <p className="text-slate-200 font-semibold mt-0.5">{log.gasVolume ? `${log.gasVolume.toFixed(1)} L/g` : '-'}</p>
-                  </div>
-                  <div>
                     <span className="block text-[9px] text-slate-500 uppercase font-bold">Gas Cost</span>
-                    <p className="text-cyan-400 font-semibold mt-0.5">{log.gasCost ? formatCurrency(log.gasCost) : '$0.00'}</p>
+                    <p className="text-cyan-400 font-semibold mt-0.5">{log.gasCost ? formatCurrency(log.gasCost) : '₹0.00'}</p>
                   </div>
                   <div>
                     <span className="block text-[9px] text-slate-500 uppercase font-bold">Amount Rec.</span>
@@ -152,7 +146,7 @@ export default function LogsTable({
                     <span className="block text-[9px] text-slate-500 uppercase font-bold">Driver Pay</span>
                     <p className="text-violet-400 font-semibold mt-0.5">{formatCurrency(log.driverPay)}</p>
                   </div>
-                  <div>
+                  <div className="col-span-2 border-t border-slate-800/50 pt-2 mt-1">
                     <span className="block text-[9px] text-slate-500 uppercase font-bold">Balance Amt.</span>
                     <p className={`font-bold mt-0.5 ${log.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {log.balance >= 0 ? '+' : ''}{formatCurrency(log.balance)}

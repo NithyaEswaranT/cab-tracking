@@ -10,14 +10,13 @@ export default function StatsGrid({ logs }: StatsGridProps) {
   const totalRevenue = logs.reduce((sum, log) => sum + Number(log.amountReceived), 0);
   const totalGasCost = logs.reduce((sum, log) => sum + Number(log.gasCost), 0);
   const totalDriverPay = logs.reduce((sum, log) => sum + Number(log.driverPay), 0);
-  const totalGasVolume = logs.reduce((sum, log) => sum + Number(log.gasVolume), 0);
   const totalTrips = logs.reduce((sum, log) => sum + Number(log.tripsCount), 0);
   const totalTally = logs.reduce((sum, log) => sum + Number(log.balance), 0);
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 2
     }).format(val);
   };
@@ -91,8 +90,8 @@ export default function StatsGrid({ logs }: StatsGridProps) {
         <p className="text-2xl md:text-3xl font-bold mt-3 tracking-tight text-slate-100">
           {formatCurrency(totalGasCost)}
         </p>
-        <p className="text-xs text-slate-500 mt-2">
-          {totalGasVolume.toFixed(1)} gal/L filled • {totalTrips} trips
+        <p className="text-xs text-slate-550 mt-2">
+          Total: {totalTrips} trips
         </p>
       </div>
     </div>

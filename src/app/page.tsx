@@ -20,10 +20,11 @@ export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [fixedDriverSalary, setFixedDriverSalary] = useState('');
 
   const itemsPerPage = 8;
 
-  // Load theme config on mount
+  // Load theme & salary config on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('cab_tracker_theme') as 'dark' | 'light';
     const active = savedTheme || 'dark';
@@ -33,7 +34,15 @@ export default function Home() {
     } else {
       document.documentElement.classList.remove('light');
     }
+
+    const savedSalary = localStorage.getItem('cab_tracker_fixed_driver_salary') || '';
+    setFixedDriverSalary(savedSalary);
   }, []);
+
+  const handleFixedSalaryChange = (val: string) => {
+    setFixedDriverSalary(val);
+    localStorage.setItem('cab_tracker_fixed_driver_salary', val);
+  };
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -128,7 +137,7 @@ export default function Home() {
       const newLog: CabLog = {
         id: logData.id || new Date().getTime().toString() + Math.random().toString(36).substring(2, 7),
         date: logData.date,
-        gasVolume: Number(logData.gasVolume),
+        gasVolume: Number(logData.gasVolume ?? 0),
         gasCost: Number(logData.gasCost),
         tripsCount: Number(logData.tripsCount),
         amountReceived: Number(logData.amountReceived),
@@ -188,7 +197,7 @@ export default function Home() {
       <header className="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-2.5 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col gap-2.5 sm:flex-row sm:justify-between sm:items-center">
           {/* Row 1 (on mobile): Logo & Info, theme and DB connection badges */}
-          <div className="flex justify-between items-center w-full sm:w-auto">
+          <div className="flex justify-between items-center  sm:w-auto">
             <div className="flex items-center gap-2">
               <span className="text-xl">🚖</span>
               <div>
@@ -291,6 +300,27 @@ export default function Home() {
             {/* 2. Page Content Routing */}
             {activeTab === 'logs' && (
               <div className="space-y-4 w-full animate-fadeIn">
+                {/* Default Settings Panel */}
+                <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base text-indigo-400">⚙️</span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-200">Default Settings</h4>
+                      <p className="text-[10px] text-slate-500 font-semibold leading-none mt-0.5">Set template values for daily logging</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                    <label className="text-xs text-slate-400 font-semibold whitespace-nowrap">Fixed Driver Salary (₹):</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 500"
+                      value={fixedDriverSalary}
+                      onChange={(e) => handleFixedSalaryChange(e.target.value)}
+                      className="bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs w-28 font-medium"
+                    />
+                  </div>
+                </div>
+
                 {/* Unified Action Row Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md">
                   {/* Left side: Title and Mobile Add Log button */}
@@ -352,6 +382,7 @@ export default function Home() {
                         setEditingLog(null);
                         setIsFormOpen(false);
                       }}
+                      defaultDriverPay={fixedDriverSalary}
                     />
                   </div>
                 )}
