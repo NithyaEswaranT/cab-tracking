@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import LogForm from '@/components/LogForm';
 import LogsTable from '@/components/LogsTable';
 import Reports from '@/components/Reports';
-import { CabLog, isDbConfigured, getLogs, saveLog, deleteLog, getLogsPaginated } from '@/app/actions/db';
+import { CabLog, isDbConfigured, getLogs, saveLog, deleteLog, getLogsPaginated, getSetting, saveSetting } from '@/app/actions/db';
 
 export default function Home() {
   const [logs, setLogs] = useState<CabLog[]>([]);
@@ -21,10 +21,12 @@ export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [fixedDriverSalary, setFixedDriverSalary] = useState('');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSavingSetting, setIsSavingSetting] = useState(false);
 
   const itemsPerPage = 8;
 
-  // Load theme & salary config on mount
+  // Load theme config on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('cab_tracker_theme') as 'dark' | 'light';
     const active = savedTheme || 'dark';
@@ -34,14 +36,40 @@ export default function Home() {
     } else {
       document.documentElement.classList.remove('light');
     }
-
-    const savedSalary = localStorage.getItem('cab_tracker_fixed_driver_salary') || '';
-    setFixedDriverSalary(savedSalary);
   }, []);
 
-  const handleFixedSalaryChange = (val: string) => {
+  // Load settings (Fixed Driver Salary) on DB Connection change
+  useEffect(() => {
+    async function loadSettings() {
+      if (isDbConnected) {
+        try {
+          const salary = await getSetting('fixed_driver_salary', '');
+          setFixedDriverSalary(salary);
+        } catch (error) {
+          console.error('Failed to load settings from DB:', error);
+        }
+      } else {
+        const savedSalary = localStorage.getItem('cab_tracker_fixed_driver_salary') || '';
+        setFixedDriverSalary(savedSalary);
+      }
+    }
+    loadSettings();
+  }, [isDbConnected]);
+
+  const handleFixedSalaryChange = async (val: string) => {
     setFixedDriverSalary(val);
     localStorage.setItem('cab_tracker_fixed_driver_salary', val);
+    
+    if (isDbConnected) {
+      setIsSavingSetting(true);
+      try {
+        await saveSetting('fixed_driver_salary', val);
+      } catch (error) {
+        console.error('Failed to save settings to DB:', error);
+      } finally {
+        setIsSavingSetting(false);
+      }
+    }
   };
 
   const toggleTheme = () => {
@@ -210,6 +238,19 @@ export default function Home() {
 
             {/* Badges on mobile right, desktop hidden */}
             <div className="flex items-center gap-2 sm:hidden">
+              {/* Settings toggle */}
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className={`cursor-pointer p-1 rounded-lg border transition text-xs shadow h-7 w-7 flex items-center justify-center ${
+                  isSettingsOpen
+                    ? 'bg-indigo-600/25 border-indigo-500/50 text-indigo-400'
+                    : 'text-slate-400 border-slate-800 hover:bg-slate-900'
+                }`}
+                title="Settings"
+              >
+                ⚙️
+              </button>
+
               {/* Theme switch */}
               <button
                 onClick={toggleTheme}
@@ -248,6 +289,19 @@ export default function Home() {
 
           {/* Desktop Only Badges (hidden on mobile) */}
           <div className="hidden sm:flex items-center gap-3">
+            {/* Settings toggle */}
+            <button
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className={`cursor-pointer p-1.5 rounded-lg border transition text-xs shadow h-7 w-7 flex items-center justify-center ${
+                isSettingsOpen
+                  ? 'bg-indigo-600/25 border-indigo-500/50 text-indigo-400'
+                  : 'text-slate-400 border-slate-800/80 hover:bg-slate-900'
+              }`}
+              title="Settings"
+            >
+              ⚙️
+            </button>
+
             {/* Theme switch */}
             <button
               onClick={toggleTheme}
@@ -274,6 +328,45 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6 pb-6">
+        {/* Collapsible Settings Panel */}
+        {isSettingsOpen && (
+          <div className="animate-fadeIn bg-slate-900/60 backdrop-blur-md border border-slate-800/80 p-5 rounded-2xl space-y-4 shadow-xl">
+            <div className="flex justify-between items-center border-b border-slate-800/60 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-indigo-400 text-base">⚙️</span>
+                <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Cab Settings</h3>
+              </div>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="cursor-pointer text-slate-500 hover:text-slate-350 text-xs font-semibold"
+              >
+                Close ✕
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Fixed Driver Daily Salary (₹)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="e.g. 500"
+                    value={fixedDriverSalary}
+                    onChange={(e) => handleFixedSalaryChange(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl pl-8 pr-4 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm font-semibold"
+                  />
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">₹</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1.5 font-medium leading-normal">
+                  This salary is stored in the {isDbConnected ? 'MongoDB database' : 'browser local storage'} and will automatically pre-fill the driver payout when creating new daily logs. {isSavingSetting && <span className="text-indigo-400 font-bold ml-1 animate-pulse">Saving to DB...</span>}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Connection Setup Assistant Notice */}
         {!isDbConnected && (
           <div className="bg-slate-900/60 backdrop-blur-sm border border-amber-500/10 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -300,27 +393,6 @@ export default function Home() {
             {/* 2. Page Content Routing */}
             {activeTab === 'logs' && (
               <div className="space-y-4 w-full animate-fadeIn">
-                {/* Default Settings Panel */}
-                <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-base text-indigo-400">⚙️</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200">Default Settings</h4>
-                      <p className="text-[10px] text-slate-500 font-semibold leading-none mt-0.5">Set template values for daily logging</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                    <label className="text-xs text-slate-400 font-semibold whitespace-nowrap">Fixed Driver Salary (₹):</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 500"
-                      value={fixedDriverSalary}
-                      onChange={(e) => handleFixedSalaryChange(e.target.value)}
-                      className="bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs w-28 font-medium"
-                    />
-                  </div>
-                </div>
-
                 {/* Unified Action Row Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md">
                   {/* Left side: Title and Mobile Add Log button */}

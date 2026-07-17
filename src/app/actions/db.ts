@@ -171,3 +171,51 @@ export async function getLogsPaginated(
     return { logs: [], total: 0, totalPages: 0 };
   }
 }
+
+/**
+ * Retrieve a application setting value from MongoDB.
+ */
+export async function getSetting(key: string, defaultValue: string = ''): Promise<string> {
+  if (!process.env.MONGODB_URI || !clientPromise) {
+    return defaultValue;
+  }
+
+  try {
+    const client = await clientPromise;
+    const db = client.db('cab_expense');
+    const collection = db.collection('cab_settings');
+
+    const doc = await collection.findOne({ key });
+    return doc ? doc.value : defaultValue;
+  } catch (error) {
+    console.error(`Failed to fetch setting ${key} from MongoDB:`, error);
+    return defaultValue;
+  }
+}
+
+/**
+ * Save an application setting value in MongoDB.
+ */
+export async function saveSetting(key: string, value: string): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.MONGODB_URI || !clientPromise) {
+    return { success: false, error: 'Database is not configured' };
+  }
+
+  try {
+    const client = await clientPromise;
+    const db = client.db('cab_expense');
+    const collection = db.collection('cab_settings');
+
+    await collection.updateOne(
+      { key },
+      { $set: { key, value } },
+      { upsert: true }
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to save setting ${key} to MongoDB:`, error);
+    return { success: false, error: 'Failed to save setting to database' };
+  }
+}
+
